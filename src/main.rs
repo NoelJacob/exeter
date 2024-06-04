@@ -146,6 +146,7 @@ fn main() {
             .with_row_index("index", Some(1))
             .collect()
             .unwrap();
+        let mut map_rows: Vec<LazyFrame> = vec![];
         for x in 1..(snps + 1) {
             let a = df_ped
                 .column(format!("snp{}_1", x).as_str())
@@ -168,11 +169,22 @@ fn main() {
                 c.push(a[y]);
                 c.push(b[y]);
             }
-            df_map = df_map
+            dbg!(&c);
+            map_rows.push( df_map
+                .filter(df_map.column("index").unwrap().equal(x as u64).unwrap().as_ref()).unwrap()
                 .with_column(Series::new("snps", [c.join(" ")]))
                 .unwrap()
-                .to_owned();
+                .to_owned().lazy());
+            dbg!(&df_map);
         }
+        let mr = concat(
+            map_rows,
+            UnionArgs::default(),
+        )
+            .unwrap()
+            .collect()
+            .unwrap();
+        df_map = mr.sort(["index"], Default::default()).unwrap();
 
         df_map = df_map.drop("index").unwrap();
         df_ped = df_ped.drop("index").unwrap();
