@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ macos-latest, ubuntu-latest, windows-latest ]
+        platform: [ macos-latest, ubuntu-latest ]
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -24,7 +24,7 @@ jobs:
           toolchain: stable
           override: true
       - run: cargo build --release
-      - run: mv ./target/release/exeter ./target/release/exeter/${{ matrix.platform }}
+      - run: mv ./target/release/exeter ./target/release/exeter-${{ matrix.platform }}
       - uses: softprops/action-gh-release@v2
         with:
-          files: ./target/release/exeter/${{ matrix.platform }}
+          files: ./target/release/exeter-${{ matrix.platform }}
